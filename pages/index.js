@@ -1,17 +1,15 @@
 // pages/index.js
 import Head from 'next/head';
-import SearchBar from '../components/SearchBar';
-// Предполагаем, что вы создадите компонент для отображения результатов
-// import ResultsDisplay from '../components/ResultsDisplay'; 
 import { useState } from 'react';
+import SearchBar from '../components/SearchBar';
+import ResultPod from '../components/ResultPod';
 
 export default function Home() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState(null);
+  const [results, setResults] = useState(null); // Содержит объект queryresult от WA
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Функция, которая будет вызывать API WolframAlpha
   const fetchResults = async () => {
     if (!query.trim()) return;
 
@@ -20,7 +18,7 @@ export default function Home() {
     setResults(null);
 
     try {
-      // Здесь мы вызываем наш серверный API-маршрут
+      // Вызываем наш серверный API-маршрут /api/calculate
       const response = await fetch(`/api/calculate?input=${encodeURIComponent(query)}`);
       
       if (!response.ok) {
@@ -30,35 +28,37 @@ export default function Home() {
       const data = await response.json();
       
       if (data.error) {
-          setError(data.error);
+          setError(data.error); // Ошибка от нашего API-маршрута
       } else {
-          setResults(data); // Сохраняем полученные поды
+          setResults(data); // Сохраняем полученный объект queryresult
       }
       
     } catch (err) {
       console.error(err);
-      setError('Не удалось выполнить запрос. Попробуйте снова.');
+      setError('Не удалось выполнить запрос. Проверьте подключение или попробуйте снова.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    // Устанавливаем базовый фон и шрифт
+    <div className="min-h-screen font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <Head>
         <title>GDcalc - Ваш продвинутый калькулятор</title>
+        <meta name="description" content="GDcalc powered by WolframAlpha" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex flex-col items-center justify-start pt-16 px-4">
+      <main className="flex flex-col items-center justify-start pt-16 px-4 pb-16">
         
         {/* Заголовок */}
-        <h1 className="text-5xl font-extrabold text-blue-600 dark:text-blue-400 mb-8">
+        <h1 className="text-6xl font-extrabold text-blue-600 dark:text-blue-400 mb-12 select-none tracking-tight">
           GDcalc
         </h1>
         
         {/* Строка Поиска */}
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-3xl">
           <SearchBar
             query={query}
             setQuery={setQuery}
@@ -68,7 +68,7 @@ export default function Home() {
         </div>
 
         {/* Секция для отображения Результатов */}
-        <div className="w-full max-w-4xl mt-12">
+        <div className="w-full max-w-4xl mt-16">
             {loading && (
                 <p className="text-xl text-center text-gray-500 dark:text-gray-400">
                     Вычисляю... ⏳
@@ -82,22 +82,15 @@ export default function Home() {
                 </div>
             )}
             
-            {/* * Здесь будет компонент ResultsDisplay, который будет принимать 'results'
-            * и красиво отображать поды WolframAlpha. 
-            */}
+            {/* Отображение подов с помощью ResultPod */}
             {results && results.pods && (
                  <div className="space-y-6">
-                    {/* Покажем простой вывод JSON для отладки */}
-                    <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">Результаты</h2>
-                    {/* {results.pods.map(pod => (<ResultPod key={pod.title} pod={pod} />))} */}
-                    
-                    {/* Временный вывод: */}
-                    <pre className="p-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-lg shadow-lg overflow-x-auto">
-                        {JSON.stringify(results.pods, null, 2)}
-                    </pre>
+                    {/* Перебираем все поды и отображаем их */}
+                    {results.pods.map(pod => (
+                        <ResultPod key={pod.id} pod={pod} />
+                    ))}
                  </div>
             )}
-
         </div>
       </main>
     </div>
