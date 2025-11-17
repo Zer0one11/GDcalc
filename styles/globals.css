@@ -1,0 +1,9 @@
+/* styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Установите шрифт Inter по умолчанию */
+html, body {
+  font-family: 'Inter', sans-serif;
+}
